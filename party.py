@@ -11,7 +11,7 @@ class Player:
     
     def add_score(self, score):
         self.score += score
-        print(f"Le joueur {self.name} vient d'obtenir {score}, son score est desormais de {self.score}")
+        print(f"{self.name} vient d'obtenir {score}, son score est desormais de {self.score}")
 
     @classmethod
     def remove_score(self, score):
@@ -50,7 +50,7 @@ class CulDeChouette:
                 number_players = -1
                 continue
     
-        print(f"Le nomnbres de joueurs est de {number_players}")
+        print(f"Le nombres de joueurs est de {number_players}")
 
         for id in range(1, number_players + 1):
             self.players.append(Player(f"Player{id}", id))
@@ -83,6 +83,13 @@ class CulDeChouette:
         
         for player in player_win:
             player.add_score(self.velute(dices))
+    
+    def all_the_same_dices(self, dices):
+        return not dices or [dices[0]] * len(dices) == dices
+
+    def cul_de_chouette(self, dice_value):
+        min_scoring = 50
+        
 
 
 
@@ -92,7 +99,7 @@ def main():
     
     for player in party.players:
         # roll_dices = party.roll_dice(player, 3)
-        roll_dices = [3, 3, 6]
+        roll_dices = [3, 3, 3]
         pair = party.has_pair(roll_dices)
         
         # Chouette
@@ -108,6 +115,7 @@ def main():
             # Chouette Velute
             party.owl_velute(roll_dices)
 
+        if party.all_the_same_dices(roll_dices):
 
         
 
