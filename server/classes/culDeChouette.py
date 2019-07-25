@@ -10,7 +10,7 @@ class CulDeChouette:
     players = []
     score_max = 343
     score_min = 0
-    current_player = None
+    currentPlayer = None
     moves = {
         "Chouette": 1,
         "Velute": 2,
@@ -117,9 +117,9 @@ class CulDeChouette:
         if pair == 6:
             print("Possibilité de gagner un Civet !")
 
-        bet = {self.current_player.name: pair}
+        bet = {self.currentPlayer.name: pair}
         for player in self.players:
-            if player.name == self.current_player.name:
+            if player.name == self.currentPlayer.name:
                 continue
 
             rand = random.randint(1, 6)
@@ -136,35 +136,35 @@ class CulDeChouette:
             winner = list(bet.keys())[list(bet.values()).index(random_roll)]
         except ValueError:
             print("Personne ne remporte son pari !")
-            self.current_player.remove_score(self.owl((pair)))
+            self.currentPlayer.remove_score(self.owl((pair)))
 
             if pair == 6:
-                print(f"{self.current_player.name} gagne 1 Civet !")
-                self.current_player.add_civet()
+                print(f"{self.currentPlayer.name} gagne 1 Civet !")
+                self.currentPlayer.add_civet()
             return False
 
-        if winner == self.current_player.name:
-            print(f"{self.current_player.name} réussi son Sirotage !!")
-            self.current_player.add_score(self.cul_de_chouette(pair), "Sirotage")
+        if winner == self.currentPlayer.name:
+            print(f"{self.currentPlayer.name} réussi son Sirotage !!")
+            self.currentPlayer.add_score(self.cul_de_chouette(pair), "Sirotage")
         else:
             print(f"{winner} rafle la mise !!")
             winner = list(filter(lambda player: player.name == winner, self.players))[0]
             winner.add_score(25, "Sirotage")
 
-            print(f"{self.current_player.name} gagne 1 Civet !")
-            self.current_player.add_civet()
+            print(f"{self.currentPlayer.name} gagne 1 Civet !")
+            self.currentPlayer.add_civet()
 
     def use_civet(self):
         mise_max = 102
-        print(f"{self.current_player.name} utilise un de ses {self.current_player.civet} Civets")
+        print(f"{self.currentPlayer.name} utilise un de ses {self.currentPlayer.civet} Civets")
 
-        if self.current_player.score <= 0:
+        if self.currentPlayer.score <= 0:
             print("Vous n'avez aucun points a miser !!")
             return False
 
         mise = 0
         while mise <= 0 or mise > mise_max:
-            mise = input(f"Combien de vos {self.current_player.score} points voulez vous miser ? Max {mise_max} points :")
+            mise = input(f"Combien de vos {self.currentPlayer.score} points voulez vous miser ? Max {mise_max} points :")
 
             try:
                 mise = int(mise)
@@ -177,7 +177,7 @@ class CulDeChouette:
             if mise > mise_max:
                 print("Maximum 102 faut pas abuser non plus !! :o")
 
-        print(f"{self.current_player.name} utilise un Civet et mise {mise} de ses {self.current_player.score} points !!")
+        print(f"{self.currentPlayer.name} utilise un Civet et mise {mise} de ses {self.currentPlayer.score} points !!")
         
         max_bet = list(self.moves.values())[-1]
         with_sipping = False
@@ -197,7 +197,7 @@ class CulDeChouette:
             if bet == 5:
                 with_sipping = True if input("Preciser avec sirotage ou pas ? (y/n) : ") == 'y' else False
         
-        print(f"{self.current_player.name} pari que son prochain coup sera {list(self.moves.keys())[list(self.moves.values()).index(bet)]}")
+        print(f"{self.currentPlayer.name} pari que son prochain coup sera {list(self.moves.keys())[list(self.moves.values()).index(bet)]}")
 
         return bet, mise, with_sipping
 
@@ -207,7 +207,12 @@ class CulDeChouette:
     def get_move(self, value):
         return self.moves.get(list(self.moves.keys())[list(self.moves.values()).index(value)], 'Invalid value')
 
-    def process_dices(self, dices):
+    def process_dices(self, dices, playerName):
+
+        for player in self.players:
+            if player.name == playerName:
+                self.currentPlayer = player
+
         pair = self.has_pair(dices)
         sipping = False
         # Cul de Chouette (all same dices)
@@ -224,9 +229,9 @@ class CulDeChouette:
         elif pair and not self.velute(dices):
             print(f"Chouette de {pair} !!")
             #Sirotage
-            sipping = True if input(f"{self.current_player.name} fait Chouette de {pair} !! Voulez vous tentez un Cul de Chouette ?! (y/n): ") == 'y' else False
-            if sipping:
-                self.sipping(pair)
+            # sipping = True if input(f"{self.currentPlayer.name} fait Chouette de {pair} !! Voulez vous tentez un Cul de Chouette ?! (y/n): ") == 'y' else False
+            # if sipping:
+            #     self.sipping(pair)
             return 1
         # Velute
         elif self.velute(dices):

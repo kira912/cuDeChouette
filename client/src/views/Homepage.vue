@@ -29,6 +29,9 @@
               <v-flex v-if="dices" v-for="dice in dices">
                 <v-img :src="showDiceImage(dice)" height="100px" width="100px"></v-img>
               </v-flex>
+          <h1 v-if="dices.length > 0">TOTAL : {{ dices.reduce((a, b) => {
+            return a + b 
+          }) }}</h1>
             </v-layout>
           </transition>
         </v-parallax>
@@ -69,7 +72,8 @@ export default {
         }
       ],
       playerCreated: false,
-      dices: []
+      dices: [],
+      dicesProcessing: null
     };
   },
   methods: {
@@ -89,13 +93,31 @@ export default {
     addPlayer: function() {
       this.players.push({name: '', score: 0})
     },
-    rollDices(numberToRolls) {
+    rollDices(numberToRolls, name) {
       const path = 'http://localhost:5000/rollDices'
       axios.post(path, {
         dices: numberToRolls
       })
       .then((response) => {
         this.dices = response.data
+
+        if (this.dices.length == 3) {
+          this.processDices(this.dices, name)
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+    },
+    processDices(dices, name) {
+      const path = 'http://localhost:5000/processDices'
+      axios.post(path, {
+        dices: dices,
+        playerName: name
+      })
+      .then((response) => {
+        this.dicesProcessing = response.data
+        console.log(response)
       })
       .catch((err) => {
         console.error(err)
