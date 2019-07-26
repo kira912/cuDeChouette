@@ -20,8 +20,8 @@ class CulDeChouette:
         "Néant": 6
     }
 
-    def __init__(self):
-        self.players = []
+    # def __init__(self):
+    #     self.players = []
 
     def roll_dice(self, numberDices):
         # print(f"{playerName} lance {numberDices} dès....")
@@ -39,7 +39,6 @@ class CulDeChouette:
         for player in players:
             self.players.append(Player(player["name"], i))
             i += 1
-        return self.players
 
     def party_config(self):
         number_players = -1
@@ -209,10 +208,11 @@ class CulDeChouette:
 
     def process_dices(self, dices, playerName):
 
-        for player in self.players:
-            if player.name == playerName:
-                self.currentPlayer = player
+        # for player in self.players:
+        #     if player.name == playerName:
+        #         self.currentPlayer = player
 
+        print("processDiceCulDeChouetteClass", self.currentPlayer)
         pair = self.has_pair(dices)
         sipping = False
         # Cul de Chouette (all same dices)
@@ -248,3 +248,15 @@ class CulDeChouette:
 
     def getPlayers(self):
         return self.players
+
+    def setCurrentPlayer(self, playerName):
+        print("rest", self.players)
+        for player in self.players:
+            if player.name == playerName:
+                self.currentPlayer = player
+        print(self.currentPlayer)
+        return None
+
+    def resetGame(self):
+        self.players = []
+        self.currentPlayer = None
