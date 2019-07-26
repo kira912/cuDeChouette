@@ -23,6 +23,7 @@
       <v-flex
         pa-1
       >
+        <v-btn color="primary" @click="resetGame()">Reset Game</v-btn>
         <v-parallax :src="require('@/assets/green.jpg')" height="1000">
           <transition name="slide-title">
             <v-layout row id="dice" justify-center justify-space-around>
@@ -31,9 +32,7 @@
               </div>
             </v-layout>
           </transition>
-          <v-layout v-if="hasWinner">
-            <h1>{{ winnerMsg }}</h1>
-          </v-layout>
+          <h1 v-if="hasWinner">{{ winnerMsg }}</h1>
             <v-layout>
               <v-flex>
                 <h1 v-if="dices.length > 0">TOTAL : {{ sumDices }}</h1>
@@ -49,11 +48,22 @@
         pa-1
       >
         <v-card v-for="player in players">
-          <v-card-text class="font-weight-bold display-1">{{ player.name }}</v-card-text>
+          <v-card-text v-model="bets.playerName" class="font-weight-bold display-1">{{ player.name }}</v-card-text>
           <v-card-text class="font-weight-bold"> Score : {{ player.score }}</v-card-text>
+          <!-- <v-form ref="form" v-if="activeSipping"> -->
+            <v-text-field
+              hint="Veuillez choisir entre 1 et 6" 
+              type="number" 
+              outlined 
+              min="1" 
+              max="6" 
+              :rules="[ruleInputSipping.minMax]"
+              v-model="player.bet"
+            ></v-text-field>
+            <v-btn color="warning" @click="addBet(player)">Parier</v-btn>
+          <!-- </v-form> -->
           <v-btn v-if="!hasWinner" color="primary" @click="rollDices(3, player.name)">Lancer les dès</v-btn>
         </v-card>
-        <v-btn color="primary" @click="resetGame()">Reset Game</v-btn>
       </v-flex>
     </v-layout>
     </v-container>
@@ -72,14 +82,6 @@ export default {
       numberPlayersText: "Veuillez renseigner les noms des joueurs",
       addPlayerText: "Ajouter un joueur",
       players: [],
-      inputs: [
-        {
-          label: 'Player1'
-        },
-        {
-          label: 'Player2'
-        }
-      ],
       playerCreated: false,
       dices: [],
       dicesProcessing: {
@@ -87,6 +89,12 @@ export default {
         move: "",
         score: 0
       },
+      activeSipping: false,
+      ruleInputSipping: {
+        minMax: v => v >= 1 && v <= 6 || 'Tu utilises des dès a combien de face connard ?'
+      },
+      sippingDice: 0,
+      bets: [],
       hasWinner: false,
       winnerMsg: ""
     };
@@ -116,7 +124,7 @@ export default {
       })
     },
     addPlayer: function() {
-      this.players.push({name: '', score: 0})
+      this.players.push({name: '', score: 0, bet: 0})
     },
     rollDices(numberToRolls, name) {
       const path = 'http://localhost:5000/rollDices'
@@ -125,6 +133,7 @@ export default {
       })
       .then((response) => {
         this.dices = response.data
+        this.sippingDice = response.data.length == 1 ? response.data : 0
 
         if (this.dices.length == 3) {
           this.processDices(this.dices, name)
@@ -143,6 +152,12 @@ export default {
       })
       .then((response) => {
 
+        console.log(response)
+
+        if (response.data.move == "Chouette") {
+          this.activeSipping = true
+        }
+
         if (response.data.hasWinner) {
           this.hasWinner = true
           this.winner(response.data.winner)
@@ -157,6 +172,23 @@ export default {
       .catch((err) => {
         console.error(err)
       })
+    },
+    sipping() {
+      const pathSipping = 'http://localhost:5000/sipping'
+
+      this.rollDices(1)
+
+      if (this.sippingDice) {
+        axios.post(path, {
+          dice: this.sippingDice,
+        })
+        .then((response) => {
+          console.log(response)
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+      }
     },
     winner(name) {
       this.winnerMsg = `${name} a remporté la partie !`

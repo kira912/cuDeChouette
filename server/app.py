@@ -32,7 +32,7 @@ def start_game():
 @app.route('/rollDices', methods=['POST'])
 def rollDices():
     diceNumber = request.get_json()['dices']
-    dices = game.roll_dice(3)
+    dices = game.roll_dice(diceNumber)
 
     return jsonify(dices)
 
@@ -70,6 +70,14 @@ def processDices():
 
     response['score'] = player.score
     return jsonify(response)
+
+@app.route('/sipping', methods=['POST'])
+def sipping():
+    dice = request.get_json()['dice']
+    players = request.get_json()['players']
+
+    pair = game.has_pair(dices)
+    game.sipping(pair)
 
 @app.route('/resetGame', methods=['GET'])
 def resetGame():

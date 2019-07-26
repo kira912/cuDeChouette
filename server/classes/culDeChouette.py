@@ -32,6 +32,14 @@ class CulDeChouette:
 
         print(f"Le total du lancé est de {sum(rolls)}")
         
+        rolls = [3, 3, 5] #Chouette
+        # rolls = [6, 6, 5] #Chouette 6
+        # rolls = [2, 3, 5] #Velute
+        # rolls = [3, 3, 6] #Chouette Velute
+        # rolls = [6, 6, 6] #Cul de Chouette
+        # rolls = [4, 5, 6] #Suite
+        # rolls = [3, 4, 6] #Néant
+
         return rolls
 
     def createPlayers(self, players):
@@ -112,46 +120,49 @@ class CulDeChouette:
             player.remove_score(10)
 
     def sipping(self, pair):
-
         if pair == 6:
             print("Possibilité de gagner un Civet !")
 
-        bet = {self.currentPlayer.name: pair}
-        for player in self.players:
-            if player.name == self.currentPlayer.name:
-                continue
 
-            rand = random.randint(1, 6)
-            while rand in bet.values():
-                rand = random.randint(1, 6)
-            print(f"{player.name} choisi le {rand}")
-            bet.update({player.name : rand})
+
+        return False
+
+        # bet = {self.currentPlayer.name: pair}
+        # for player in self.players:
+        #     if player.name == self.currentPlayer.name:
+        #         continue
+
+        #     rand = random.randint(1, 6)
+        #     while rand in bet.values():
+        #         rand = random.randint(1, 6)
+        #     print(f"{player.name} choisi le {rand}")
+        #     bet.update({player.name : rand})
         
-        # random_roll = pair
-        # random_roll = 8
-        # random_roll = bet['Player2']
-        random_roll = self.roll_dice(1)[0]
-        try:
-            winner = list(bet.keys())[list(bet.values()).index(random_roll)]
-        except ValueError:
-            print("Personne ne remporte son pari !")
-            self.currentPlayer.remove_score(self.owl((pair)))
+        # # random_roll = pair
+        # # random_roll = 8
+        # # random_roll = bet['Player2']
+        # random_roll = self.roll_dice(1)[0]
+        # try:
+        #     winner = list(bet.keys())[list(bet.values()).index(random_roll)]
+        # except ValueError:
+        #     print("Personne ne remporte son pari !")
+        #     self.currentPlayer.remove_score(self.owl((pair)))
 
-            if pair == 6:
-                print(f"{self.currentPlayer.name} gagne 1 Civet !")
-                self.currentPlayer.add_civet()
-            return False
+        #     if pair == 6:
+        #         print(f"{self.currentPlayer.name} gagne 1 Civet !")
+        #         self.currentPlayer.add_civet()
+        #     return False
 
-        if winner == self.currentPlayer.name:
-            print(f"{self.currentPlayer.name} réussi son Sirotage !!")
-            self.currentPlayer.add_score(self.cul_de_chouette(pair), "Sirotage")
-        else:
-            print(f"{winner} rafle la mise !!")
-            winner = list(filter(lambda player: player.name == winner, self.players))[0]
-            winner.add_score(25, "Sirotage")
+        # if winner == self.currentPlayer.name:
+        #     print(f"{self.currentPlayer.name} réussi son Sirotage !!")
+        #     self.currentPlayer.add_score(self.cul_de_chouette(pair), "Sirotage")
+        # else:
+        #     print(f"{winner} rafle la mise !!")
+        #     winner = list(filter(lambda player: player.name == winner, self.players))[0]
+        #     winner.add_score(25, "Sirotage")
 
-            print(f"{self.currentPlayer.name} gagne 1 Civet !")
-            self.currentPlayer.add_civet()
+        #     print(f"{self.currentPlayer.name} gagne 1 Civet !")
+        #     self.currentPlayer.add_civet()
 
     def use_civet(self):
         mise_max = 102
@@ -245,7 +256,10 @@ class CulDeChouette:
         else:
             print(f"Néant !!")
             return 6
+    
+    # def getPlayerSipping(self):
 
+    
     def getPlayers(self):
         return self.players
 
