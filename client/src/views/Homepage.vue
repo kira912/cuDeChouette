@@ -47,18 +47,21 @@
         shrink
         pa-1
       >
-        <v-card v-for="player in players">
-          <v-card-text v-model="bets.playerName" class="font-weight-bold display-1">{{ player.name }}</v-card-text>
+        <v-card v-for="player in players" :key="player.name" v-model="sippingBet">
+          <v-card-text class="font-weight-bold display-1">{{ player.name }}</v-card-text>
           <v-card-text class="font-weight-bold"> Score : {{ player.score }}</v-card-text>
-          <!-- <v-form ref="form" v-if="activeSipping"> -->
+          <!-- <v-form ref="form" > -->
             <v-text-field
-              hint="Veuillez choisir entre 1 et 6" 
+              v-if="activeSipping"
+              persistent-hint
+              :hint="player.hint" 
               type="number" 
               outlined 
               min="1" 
-              max="6" 
+              max="6"
               :rules="[ruleInputSipping.minMax]"
               v-model="player.bet"
+              :disabled="player.disableSippingInput"
             ></v-text-field>
             <v-btn color="warning" @click="addBet(player)">Parier</v-btn>
           <!-- </v-form> -->
@@ -94,7 +97,6 @@ export default {
         minMax: v => v >= 1 && v <= 6 || 'Tu utilises des dès a combien de face connard ?'
       },
       sippingDice: 0,
-      bets: [],
       hasWinner: false,
       winnerMsg: ""
     };
@@ -107,9 +109,33 @@ export default {
     },
     getMove() {
       return this.dicesProcessing.move ? this.dicesProcessing.move : "En attente"
-    }
+    },
+    sippingBet() {
+      this.players.find((player) => {
+        if (player.name == this.dicesProcessing.player) {
+          player.disableSippingInput = true
+          player.bet = this.getPair()
+          player.hint = "Vous ne pouvez pas choisir vous tenter un Cul de Chouette"
+        } else {
+          player.disableSippingInput = false
+          player.bet = null
+          player.hint = "Veuillez choisir entre 1 et 6"
+        }
+      })
+    },
   },
   methods: {
+    getPair() {
+      const count = names =>
+        names.reduce((a, b) => ({ ...a,
+          [b]: (a[b] || 0) + 1
+        }), {}) // don't forget to initialize the accumulator
+
+      const duplicates = dict =>
+        Object.keys(dict).filter((a) => dict[a] > 1)
+      
+      return duplicates(count(this.dices))[0]
+    },
     startGame() {
       const path = 'http://localhost:5000/startGame'
       axios.post(path, {
@@ -156,6 +182,10 @@ export default {
 
         if (response.data.move == "Chouette") {
           this.activeSipping = true
+          console.log(this.checkBetPlayers())
+          //TODO Call sipping route if all player have bet
+          console.log(player)
+
         }
 
         if (response.data.hasWinner) {
@@ -181,6 +211,7 @@ export default {
       if (this.sippingDice) {
         axios.post(path, {
           dice: this.sippingDice,
+          players: this.players
         })
         .then((response) => {
           console.log(response)
@@ -202,6 +233,15 @@ export default {
       .catch((err) => {
         console.error(err)
       })
+    },
+    checkBetPlayers() {
+      this.players.find((player) => {
+        console.log(player)
+        if (typeof player.bet == 'undefined') {
+          return false
+        }
+      })
+      return true
     },
     showDiceImage: function(dice) {
       if (dice === 1) {

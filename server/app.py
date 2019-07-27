@@ -76,6 +76,7 @@ def sipping():
     dice = request.get_json()['dice']
     players = request.get_json()['players']
 
+    print(players)
     pair = game.has_pair(dices)
     game.sipping(pair)
 
