@@ -24,7 +24,6 @@ class CulDeChouette:
     #     self.players = []
 
     def roll_dice(self, numberDices):
-        # print(f"{playerName} lance {numberDices} dès....")
         rolls = [random.randint(1, 6) for i in range(numberDices)]
 
         for index in range(len(rolls)):
@@ -118,51 +117,6 @@ class CulDeChouette:
         last_player = filter(lambda player: player.id == random_order[-1].id, self.players)
         for player in last_player:
             player.remove_score(10)
-
-    def sipping(self, pair):
-        if pair == 6:
-            print("Possibilité de gagner un Civet !")
-
-
-
-        return False
-
-        # bet = {self.currentPlayer.name: pair}
-        # for player in self.players:
-        #     if player.name == self.currentPlayer.name:
-        #         continue
-
-        #     rand = random.randint(1, 6)
-        #     while rand in bet.values():
-        #         rand = random.randint(1, 6)
-        #     print(f"{player.name} choisi le {rand}")
-        #     bet.update({player.name : rand})
-        
-        # # random_roll = pair
-        # # random_roll = 8
-        # # random_roll = bet['Player2']
-        # random_roll = self.roll_dice(1)[0]
-        # try:
-        #     winner = list(bet.keys())[list(bet.values()).index(random_roll)]
-        # except ValueError:
-        #     print("Personne ne remporte son pari !")
-        #     self.currentPlayer.remove_score(self.owl((pair)))
-
-        #     if pair == 6:
-        #         print(f"{self.currentPlayer.name} gagne 1 Civet !")
-        #         self.currentPlayer.add_civet()
-        #     return False
-
-        # if winner == self.currentPlayer.name:
-        #     print(f"{self.currentPlayer.name} réussi son Sirotage !!")
-        #     self.currentPlayer.add_score(self.cul_de_chouette(pair), "Sirotage")
-        # else:
-        #     print(f"{winner} rafle la mise !!")
-        #     winner = list(filter(lambda player: player.name == winner, self.players))[0]
-        #     winner.add_score(25, "Sirotage")
-
-        #     print(f"{self.currentPlayer.name} gagne 1 Civet !")
-        #     self.currentPlayer.add_civet()
 
     def use_civet(self):
         mise_max = 102

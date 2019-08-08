@@ -32,10 +32,24 @@
               </div>
             </v-layout>
           </transition>
+
+          <v-dialog v-model="activeSippingModal" max-width="500" justify-center>
+            <v-card>
+              <v-card-title>
+                {{ dicesProcessing.player }} veut il tenter son Cul de Chouette ?
+              </v-card-title>
+              <v-spacer></v-spacer>
+
+              <v-btn color="primary" @click="activateSipping(), activeSippingModal = false">Oui</v-btn>
+              <v-btn color="danger" @click="activeSippingModal = false">Non</v-btn>
+            </v-card>
+          </v-dialog>
+
           <h1 v-if="hasWinner">{{ winnerMsg }}</h1>
             <v-layout>
               <v-flex>
-                <h1 v-if="dices.length > 0">TOTAL : {{ sumDices }}</h1>
+                <h1 v-if="dices.length > 0 && !activeSipping">TOTAL des 3 dès : {{ sumDices }}</h1>
+                <h1 v-if="activeSipping">TOTAL du lancé de sirotage : {{ dices[2] }} </h1>
               </v-flex>
               <v-flex>
                 <h1> {{ getMove }} </h1>
@@ -45,28 +59,36 @@
       </v-flex>
       <v-flex
         shrink
-        pa-1
+        ma-5
       >
-        <v-card v-for="player in players" :key="player.name" v-model="sippingBet">
-          <v-card-text class="font-weight-bold display-1">{{ player.name }}</v-card-text>
-          <v-card-text class="font-weight-bold"> Score : {{ player.score }}</v-card-text>
-          <!-- <v-form ref="form" > -->
+        <v-card
+          v-for="player in players"
+          :key="player.name"
+          :id="player.name"
+          v-model="sippingBet"
+        >
+          <v-layout column pa-5>
+            <v-card-text class="font-weight-bold display-1">{{ player.name }}</v-card-text>
+            <v-card-text class="font-weight-bold"> Score : {{ player.score }}</v-card-text>
             <v-text-field
               v-if="activeSipping"
               persistent-hint
-              :hint="player.hint" 
-              type="number" 
-              outlined 
-              min="1" 
+              :hint="player.hint"
+              type="number"
+              outlined
+              min="1"
               max="6"
               :rules="[ruleInputSipping.minMax]"
               v-model="player.bet"
               :disabled="player.disableSippingInput"
             ></v-text-field>
-            <v-btn color="warning" @click="addBet(player)">Parier</v-btn>
-          <!-- </v-form> -->
-          <v-btn v-if="!hasWinner" color="primary" @click="rollDices(3, player.name)">Lancer les dès</v-btn>
+            <v-btn v-if="!hasWinner" color="primary" @click="rollDices(3, player.name)">Lancer les dès</v-btn>
+
+          </v-layout>
         </v-card>
+        <v-layout ma-5>
+          <v-btn v-if="activeSipping" color="warning" :disabled="validateBets" @click="sipping()">Valider les paris</v-btn>
+        </v-layout>
       </v-flex>
     </v-layout>
     </v-container>
@@ -93,6 +115,7 @@ export default {
         score: 0
       },
       activeSipping: false,
+      activeSippingModal: false,
       ruleInputSipping: {
         minMax: v => v >= 1 && v <= 6 || 'Tu utilises des dès a combien de face connard ?'
       },
@@ -110,30 +133,45 @@ export default {
     getMove() {
       return this.dicesProcessing.move ? this.dicesProcessing.move : "En attente"
     },
-    sippingBet() {
-      this.players.find((player) => {
-        if (player.name == this.dicesProcessing.player) {
-          player.disableSippingInput = true
-          player.bet = this.getPair()
-          player.hint = "Vous ne pouvez pas choisir vous tenter un Cul de Chouette"
-        } else {
-          player.disableSippingInput = false
-          player.bet = null
-          player.hint = "Veuillez choisir entre 1 et 6"
+    sippingBet: {
+      get() {},
+      set(newValue) {
+        this.players.find((player) => {
+          if (player.name != this.dicesProcessing.player) {
+            player.disableSippingInput = false
+            player.bet = newValue.data
+            player.hint = "Veuillez choisir entre 1 et 6"
+          }
+        })
+      }
+    },
+
+    // Return false if if all bets is ok for remove disabled property og button (vuetify)
+    validateBets() {
+     let bets = []
+      this.players.forEach((player) => {
+        if (player.bet != null) {
+          bets.push(player.bet)
         }
       })
+
+      return bets.length === this.players.length ? false : true
+    },
+    whoTheNext() {
+
     },
   },
+
   methods: {
     getPair() {
       const count = names =>
         names.reduce((a, b) => ({ ...a,
           [b]: (a[b] || 0) + 1
-        }), {}) // don't forget to initialize the accumulator
+        }), {})
 
       const duplicates = dict =>
         Object.keys(dict).filter((a) => dict[a] > 1)
-      
+
       return duplicates(count(this.dices))[0]
     },
     startGame() {
@@ -178,14 +216,9 @@ export default {
       })
       .then((response) => {
 
-        console.log(response)
-
+        this.dicesProcessing.move = response.data.move
         if (response.data.move == "Chouette") {
-          this.activeSipping = true
-          console.log(this.checkBetPlayers())
-          //TODO Call sipping route if all player have bet
-          console.log(player)
-
+          this.activeSippingModal = true
         }
 
         if (response.data.hasWinner) {
@@ -194,7 +227,8 @@ export default {
         }
         this.players.find((player) => {
           if (player.name == response.data.player) {
-            player.score = response.data.score
+            player.score = response.data.score,
+            player.launched = response.data.launched
           }
         })
         this.dicesProcessing = response.data
@@ -203,23 +237,53 @@ export default {
         console.error(err)
       })
     },
+    addScore() {
+      const path = 'http://localhost:5000/addScore'
+
+      axios.post(path, {
+        score: this.dices[2] * this.dices[2]
+      })
+      .then((response) => {
+
+        console.log(response)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+    },
     sipping() {
-      const pathSipping = 'http://localhost:5000/sipping'
+      const rollDiceSipping = 'http://localhost:5000/rollDices'
+      axios.post(rollDiceSipping, {
+        dices: 1
+      })
+      .then((response) => {
 
-      this.rollDices(1)
+        //TODO force dice for test, don't forget to remove this shit :D
+        this.dices[2] = 3
+          // console.log(this.dices.includes(this.dices[2]))
+        if (this.dices.includes(this.dices[2])) {
+          this.dicesProcessing.move = "Cul de Chouette !!"
+          this.addScore()
+        }
 
-      if (this.sippingDice) {
-        axios.post(path, {
-          dice: this.sippingDice,
-          players: this.players
-        })
-        .then((response) => {
-          console.log(response)
-        })
-        .catch((err) => {
-          console.error(err)
-        })
-      }
+        this.activeSipping = false
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+    },
+    activateSipping() {
+      this.activeSipping = true
+
+      this.players.find((player) => {
+        if (player.name == this.dicesProcessing.player) {
+          player.disableSippingInput = true
+          player.bet = this.getPair()
+          player.hint = "Vous ne pouvez pas choisir vous tenter un Cul de Chouette"
+        }
+      })
+
     },
     winner(name) {
       this.winnerMsg = `${name} a remporté la partie !`
@@ -235,13 +299,14 @@ export default {
       })
     },
     checkBetPlayers() {
-      this.players.find((player) => {
-        console.log(player)
-        if (typeof player.bet == 'undefined') {
-          return false
+      let bets = []
+      this.players.forEach((player) => {
+        if (player.bet != null) {
+          bets.push(player.bet)
         }
       })
-      return true
+
+      return bets.length === this.players.length ? true : false
     },
     showDiceImage: function(dice) {
       if (dice === 1) {

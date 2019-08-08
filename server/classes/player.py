@@ -1,5 +1,5 @@
 class Player:
-    score, civet, grelottine = 0, 0, 0
+    score, civet, grelottine, launched = 0, 0, 0, 0
     name = ""
 
     def __init__(self, name, id):

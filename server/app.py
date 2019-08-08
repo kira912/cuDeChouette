@@ -26,7 +26,7 @@ def start_game():
     
     for player in game.players:
         session['playerName'] = player.name
-        response.append({'name': player.name, 'score': player.score})
+        response.append({'name': player.name, 'score': player.score, 'launched': player.launched})
     return jsonify(response)
 
 @app.route('/rollDices', methods=['POST'])
@@ -42,6 +42,7 @@ def processDices():
     playerName = request.get_json()['playerName']
 
     game.setCurrentPlayer(playerName)
+    game.currentPlayer.launched += 1
 
     resultDices = game.process_dices(dices, playerName)
     player = game.currentPlayer
@@ -69,16 +70,16 @@ def processDices():
         player.add_grelottine()
 
     response['score'] = player.score
+    response['launched'] = player.launched
     return jsonify(response)
 
-@app.route('/sipping', methods=['POST'])
-def sipping():
-    dice = request.get_json()['dice']
-    players = request.get_json()['players']
+@app.route('/addScore', methods=['POST'])
+def addScore():
+    score = request.get_json()['score']
+    game.currentPlayer.add_score(score, "Sirotage")
 
-    print(players)
-    pair = game.has_pair(dices)
-    game.sipping(pair)
+    print(game.currentPlayer)
+    return jsonify(game.currentPlayer.score)
 
 @app.route('/resetGame', methods=['GET'])
 def resetGame():
