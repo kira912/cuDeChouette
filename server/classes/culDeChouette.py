@@ -24,6 +24,7 @@ class CulDeChouette:
     #     self.players = []
 
     def roll_dice(self, numberDices):
+        # print(f"{playerName} lance {numberDices} dès....")
         rolls = [random.randint(1, 6) for i in range(numberDices)]
 
         for index in range(len(rolls)):
@@ -31,7 +32,7 @@ class CulDeChouette:
 
         print(f"Le total du lancé est de {sum(rolls)}")
         
-        rolls = [3, 3, 5] #Chouette
+        # rolls = [3, 3, 5] #Chouette
         # rolls = [6, 6, 5] #Chouette 6
         # rolls = [2, 3, 5] #Velute
         # rolls = [3, 3, 6] #Chouette Velute
@@ -211,14 +212,10 @@ class CulDeChouette:
             print(f"Néant !!")
             return 6
     
-    # def getPlayerSipping(self):
-
-    
     def getPlayers(self):
         return self.players
 
     def setCurrentPlayer(self, playerName):
-        print("rest", self.players)
         for player in self.players:
             if player.name == playerName:
                 self.currentPlayer = player

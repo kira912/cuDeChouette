@@ -48,38 +48,51 @@ def processDices():
     player = game.currentPlayer
     pair = game.has_pair(dices)
     moveTranslated = list(game.moves.keys())[list(game.moves.values()).index(resultDices)]
-    # print("frrte", game.moves.get(list(game.moves.values())[list(game.moves.values())], 'Invalid value'))
 
     response = {'move': moveTranslated, 'player': playerName}
     
     if player.score >= game.score_max:
         return jsonify({"hasWinner": True, "winner": player.name})
 
-    if resultDices == 1:
-        player.add_score(game.owl(pair), f"Chouette de {pair}")
-    elif resultDices == 2:
-        player.add_score(game.velute(dices), "Velute")
-    elif resultDices == 3:
-        winner_owl_velute = game.owl_velute(dices) 
-        winner_owl_velute.add_score(game.velute(dices), "Chouette Velute")
-    elif resultDices == 4:
-        game.following_scoring()
-    elif resultDices == 5:
-        player.add_score(game.cul_de_chouette(dices[0]), "Cul de Chouette")
-    elif resultDices == 6:
-        player.add_grelottine()
-
     response['score'] = player.score
     response['launched'] = player.launched
+    response['move'] = moveTranslated
+    response['player'] = playerName
+
     return jsonify(response)
 
 @app.route('/addScore', methods=['POST'])
 def addScore():
-    score = request.get_json()['score']
-    game.currentPlayer.add_score(score, "Sirotage")
+    playerName = request.get_json()['playerName']
+    move = request.get_json()['move']
+    dices = request.get_json()['dices']
 
-    print(game.currentPlayer)
-    return jsonify(game.currentPlayer.score)
+    pair = game.has_pair(dices)
+
+    filtering = filter(lambda player: player.name == playerName, game.players)
+    response = {}
+
+    if filtering:
+        for player in filtering:
+            moveToInt = game.moves.get(move)
+            if moveToInt == 1:
+                player.add_score(game.owl(pair), f"game.get_move(moveToInt) de {pair}")
+            elif moveToInt == 2:
+                player.add_score(game.velute(dices), game.get_move(moveToInt))
+            elif moveToInt == 3:
+                winner_owl_velute = game.owl_velute(dices) 
+                winner_owl_velute.add_score(game.velute(dices), game.get_move(moveToInt))
+            elif moveToInt == 4:
+                game.following_scoring()
+            elif moveToInt == 5:
+                player.add_score(game.cul_de_chouette(dices[0]), game.get_move(moveToInt))
+            elif moveToInt == 6:
+                player.add_grelottine()
+            # player.add_score(score, "Sirotage")
+            response['playerName'] = player.name
+            response['score'] = player.score
+    
+    return jsonify(response)
 
 @app.route('/resetGame', methods=['GET'])
 def resetGame():
